@@ -1,53 +1,72 @@
 package METS::File;
 use strict;
+use POSIX qw(strftime);
 
 use XML::LibXML;
 
 sub new {
     my $class = shift;
-    my $id = shift;
-    my $versdate = shift;
-    my $admid = shift;
-    my $use = shift;
-    return bless {}, $class;
+    my %attrs = @_;
+    return bless {
+        attrs => METS::copyAttributes(
+            \%attrs, qw(ID SEQ), @METS::FILECORE,
+            qw(OWNERID ADMID DMDID GROUPID USE BEGIN END BETYPE)
+        )
+    }, $class;
+    subfiles => [];
 }
 
-# Add a file from a DOM element or a METS::File object.
-sub add_file {
+sub set_local_file {
     my $self = shift;
-    my $file = shift;
+    $self->{'local_file'} = shift;
+
+    $self->compute_md5_checksum()
+        if ( not defined $self->{'attrs'}{'CHECKSUM'} );
+
+    my @stat = stat( $self->{'local_file'} )
+        or die("Cannot stat $self->{'local_file'}");
+    my $size = $stat[7];
+    my $mtime = strftime( "%Y-%m-%dT%H:%M:%S", localtime( $stat[9] ) );
+    $self->{'attrs'}{'SIZE'} = $size if not defined $self->{'attrs'}{'SIZE'};
+
+    # By default use the mtime since there's no reliable way to get the
+    # creation time
+    $self->{'attrs'}{'CREATED'} = $mtime
+        if not defined $self->{'attrs'}{'CREATED'};
+
 }
 
-sub set_filecore {
+sub compute_md5_checksum {
     my $self = shift;
-    my $filecore = shift; # from METS::FileCore
+    die("Don't know how to find the file")
+        unless defined $self->{'local_file'};
+    my $file = $self->{'local_file'};
+
+    require Digest::MD5;
+    open( FILE, $file ) or die "Can't open '$file': $!";
+    binmode(FILE);
+
+    my $digest = Digest::MD5->new->addfile(*FILE)->hexdigest;
+    close(FILE);
+    $self->{'attrs'}{'CHECKSUM'}     = $digest;
+    $self->{'attrs'}{'CHECKSUMTYPE'} = 'MD5';
+
 }
- 
-# The file location element <FLocat> provides a pointer to the location
-# of a content file. It uses the XLink reference syntax to provide linking
-# information indicating the actual location of the content file, along with
-# other attributes specifying additional linking information. NOTE:
-# <FLocat> is an empty element. The location of the resource pointed to
-# MUST be stored in the xlink:href attribute.
-					
- 
-sub add_fLocat {
+
+sub to_node {
     my $self = shift;
-    my $id = shift;
-    my $use = shift;
-    my $xlink = shift; # from METS::XLink
+
+    my $node = METS::createElement( "file", $self->{'attrs'} );
+
+    if ( defined $self->{'local_file'} ) {
+        my $flocat = METS::createElement( "FLocat",
+            { LOCTYPE => 'OTHER', OTHERLOCTYPE => 'SYSTEM' } );
+        METS::setXLink( $flocat, { href => $self->{'local_file'} } );
+        $node->appendChild($flocat);
+
+    }
+    return $node;
+
 }
 
-sub set_fContent {
-    my $self = shift;
-    my $data = shift; # from METS::Data
-}
-
-sub add_stream {
-    # not supported now, add later if needed
-}
-
-sub add_transform_file {
-    # not supported now, add later if needed
-}
-
+1;

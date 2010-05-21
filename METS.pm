@@ -4,71 +4,101 @@ use strict;
 use XML::LibXML;
 use METS::Header;
 use METS::MetadataSection;
+use METS::File;
+use METS::FileGroup;
+use METS::StructMap;
 
 my $ns_METS        = "http://www.loc.gov/METS/";
-my $ns_xlink  = "http://www.w3.org/1999/xlink";
 my $ns_prefix_METS = "METS";
-our @LOCATION = ('LOCTYPE','OTHERLOCTYPE');
-our @METADATA = ('MDTYPE','OTHERMDTYPE','MDTYPEVERSION');
-our @FILECORE = ('MIMETYPE','SIZE','CREATED','CHECKSUM','CHECKSUMTYPE');
+my $schema_METS    = "http://www.loc.gov/standards/mets/mets.xsd";
+my $ns_xlink       = "http://www.w3.org/1999/xlink";
+my $ns_xsi         = "http://www.w3.org/2001/XMLSchema-instance";
+our @LOCATION = ( 'LOCTYPE',  'OTHERLOCTYPE' );
+our @METADATA = ( 'MDTYPE',   'OTHERMDTYPE', 'MDTYPEVERSION' );
+our @FILECORE = ( 'MIMETYPE', 'SIZE', 'CREATED', 'CHECKSUM', 'CHECKSUMTYPE' );
 
 our @allowed_AGENT_TYPE = qw(INDIVIDUAL ORGANIZATION);
-our @allowed_AGENT_ROLE = qw(CREATOR EDITOR ARCHIVIST PRESERVATION DISSEMINATOR
-  CUSTODIAN IPOWNER);
+our @allowed_AGENT_ROLE
+    = qw(CREATOR EDITOR ARCHIVIST PRESERVATION DISSEMINATOR
+    CUSTODIAN IPOWNER);
 
 our @allowed_LOCTYPE = qw(ARK URN URL PURL HANDLE DOI OTHER);
-our @allowed_MDTYPE = qw(MARC MODS EAD DC NISOIMG LC-AV VRA TEIHDR DDI FGDC LOM PREMIS PREMIS:OBJECT PREMIS:AGENT PREMIS:RIGHTS PREMIS:EVENT TEXTMD METSRIGHTS ISO 19115:2003 NAP OTHER);
-
-
+our @allowed_MDTYPE
+    = qw(MARC MODS EAD DC NISOIMG LC-AV VRA TEIHDR DDI FGDC LOM PREMIS PREMIS:OBJECT PREMIS:AGENT PREMIS:RIGHTS PREMIS:EVENT TEXTMD METSRIGHTS ISO 19115:2003 NAP OTHER);
 
 sub new {
     my $class = shift;
     my %attrs = @_;
     my $doc   = new XML::LibXML::Document;
     return bless {
-        doc   => $doc,
-        attrs => copyAttributes( \%attrs, qw(ID OBJID LABEL TYPE PROFILE) ),
-	schemas => []
+        doc     => $doc,
+        attrs   => copyAttributes( \%attrs, qw(ID OBJID LABEL TYPE PROFILE) ),
+        schemas => [],
+        filegroups => [],
+        structmaps => []
     }, $class;
 }
 
 # Add a schema to the list of schemas for this document.
 sub add_schema {
-    my $self = shift;
+    my $self   = shift;
     my $prefix = shift;
-    my $ns = shift;
+    my $ns     = shift;
     my $schema = shift;
-    push(@{$self->{'schemas'}},[$prefix,$ns,$schema]);
+    push( @{ $self->{'schemas'} }, [ $prefix, $ns, $schema ] );
 
 }
 
 # Return the root node of the DOM for the METS document
-sub get_mets {
+sub to_node {
     my $self = shift;
 
     my $doc = $self->{'doc'};
     my $mets_node = createElement( "mets", $self->{'attrs'} );
 
-    foreach my $schema (@{$self->{'schemas'}}) {
-	my ($prefix, $ns, $schema) = @$schema;
-	# Add the namespace but don't change the namespace of the node
-	$mets_node->setNamespace( $ns,$prefix, 0);
+    my @schemaLocations = ("$ns_METS $schema_METS");
+    foreach my $schema ( @{ $self->{'schemas'} } ) {
+        my ( $prefix, $ns, $schema ) = @$schema;
 
+        # Add the namespace but don't change the namespace of the node
+        $mets_node->setNamespace( $ns, $prefix, 0 );
+
+        push( @schemaLocations, "$ns $schema" ) if defined $schema;
     }
+    $mets_node->setAttributeNS( $ns_xsi, "xsi:schemaLocation",
+        join( " ", @schemaLocations ) )
+        if (@schemaLocations);
     $doc->setDocumentElement($mets_node);
 
-    $mets_node->appendChild(objectOrNodeToNode($self->{'header'})) if defined $self->{'header'};
+    $mets_node->appendChild( objectOrNodeToNode( $self->{'header'} ) )
+        if defined $self->{'header'};
 
-    foreach my $dmdsec (@{$self->{'dmdsecs'}}) {
-	$mets_node->appendChild(objectOrNodeToNode($dmdsec));
+    foreach my $dmdsec ( @{ $self->{'dmdsecs'} } ) {
+        $mets_node->appendChild( objectOrNodeToNode($dmdsec) );
     }
 
-    foreach my $amdsec (@{$self->{'amdsecs'}}) {
-	my $amdsec_node = createElement("amdSec",{ID => $amdsec->{'id'}});
-	my $mdsecs = $amdsec->{'sections'};
-	foreach my $mdsec (@$mdsecs) {
-	    $amdsec_node->appendChild(objectOrNodeToNode($mdsec));
-	}
+    foreach my $amdsec ( @{ $self->{'amdsecs'} } ) {
+        my $amdsec_node
+            = createElement( "amdSec", { ID => $amdsec->{'id'} } );
+        $mets_node->appendChild($amdsec_node);
+        my $mdsecs = $amdsec->{'sections'};
+        foreach my $mdsec (@$mdsecs) {
+            $amdsec_node->appendChild( objectOrNodeToNode($mdsec) );
+        }
+    }
+
+    if ( @{ $self->{'filegroups'} } ) {
+        my $filesec_node = createElement("fileSec");
+        $mets_node->appendChild($filesec_node);
+        foreach my $filegroup ( @{ $self->{'filegroups'} } ) {
+            $filesec_node->appendChild( objectOrNodeToNode($filegroup) );
+        }
+    }
+
+    if ( @{ $self->{'structmaps'} } ) {
+        foreach my $structmap ( @{ $self->{'structmaps'} } ) {
+            $mets_node->appendChild( objectOrNodeToNode($structmap) );
+        }
     }
 
     return $doc;
@@ -86,7 +116,7 @@ sub add_dmd_sec {
     my $self    = shift;
     my $section = shift;
 
-    push(@{$self->{dmdsecs}},$section);
+    push( @{ $self->{dmdsecs} }, $section );
 }
 
 # Add an amdSec from DOM elements or METS::MetadataSection objects.
@@ -94,7 +124,7 @@ sub add_dmd_sec {
 sub add_amd_sec {
     my $self = shift;
     my $id   = shift;
-    push(@{$self->{amdsecs}}, { id => $id, sections => \@_ });
+    push( @{ $self->{amdsecs} }, { id => $id, sections => \@_ } );
 }
 
 # Add a file group from a DOM element or a METS::FileGroup object.
@@ -108,8 +138,9 @@ sub add_file_group {
 # Add a structMap from a DOM element or a METS::StructMap object
 sub add_struct_map {
     my $self      = shift;
-    my $id        = shift;
     my $structmap = shift;
+
+    push( @{ $self->{'structmaps'} }, $structmap );
 }
 
 # Creates the element in the METS namespace with the given attributes,
@@ -152,39 +183,47 @@ sub copyAttributes {
 # in the list of allowed values.
 
 sub checkAttrVal {
-    my $attr = shift;
+    my $attr         = shift;
     my @allowed_vals = @_;
 
     return 1 if not defined $attr;
 
     foreach my $allowed (@allowed_vals) {
-	if($allowed eq $attr) {
-	    return 1;
-	}
+        if ( $allowed eq $attr ) {
+            return 1;
+        }
     }
 
     die("Unexpected attribute value $attr");
 }
 
 sub setXLink {
-    my $element = shift;
+    my $element     = shift;
     my $xlink_attrs = shift;
 
-    while(my ($attr, $val) = each %$xlink_attrs) {
-	if($attr eq 'type') {
-	    $element->setAttribute($attr,$val);
-	} else {
-	    $element->setAttributeNS($ns_xlink,"xlink:$attr",$val);
-	}
+    while ( my ( $attr, $val ) = each %$xlink_attrs ) {
+        if ( $attr eq 'type' ) {
+            $element->setAttribute( $attr, $val );
+        }
+        else {
+            $element->setAttributeNS( $ns_xlink, "xlink:$attr", $val );
+        }
     }
 }
 
 sub objectOrNodeToNode {
     my $thing = shift;
-    if(ref($thing) =~ /^XML::LibXML/) {
-	return $thing;
-    } else {
-	return $thing->to_node();
+
+    if ( ref($thing) =~ /^XML::LibXML/ ) {
+        return $thing;
+    }
+    else {
+        return $thing->to_node();
     }
 }
 
+sub add_filegroup {
+    my $self      = shift;
+    my $filegroup = shift;
+    push( @{ $self->{'filegroups'} }, $filegroup );
+}

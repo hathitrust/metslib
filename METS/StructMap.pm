@@ -1,62 +1,78 @@
 package METS::StructMap;
 
+use strict;
+
 sub new {
     my $class = shift;
-    my $id = shift;
-    my $type = shift;
-    my $label = shift;
+    my %attrs = @_;
 
-    return bless {}, $class;
+    return bless {
+        components => [],
+        attrs      => METS::copyAttributes( \%attrs, qw(ID TYPE LABEL) ),
+    }, $class;
 }
 
-package METS::StructMap::Div;
+sub add_file_div {
+    my $self    = shift;
+    my $fileids = shift;
+    my %attrs   = @_;
+    my $div     = METS::StructMap::Div->new(%attrs);
+    foreach my $fileid ( @{$fileids} ) {
+        $div->add_fptr( fileid => $fileid );
+    }
+    $self->add_div($div);
 
-sub new {
 }
 
-sub add_mptr {
-    my $self = shift;
-    my $id = shift;
-    my $xlink = shift; #from METS::XLink
-    my $contentids = shift;
-}
+sub to_node {
+    my $self     = shift;
+    my $nodename = shift;
+    $nodename = "structMap" if not defined $nodename;
+    my $node = METS::createElement( $nodename, $self->{'attrs'} );
 
-sub add_fptr {
-    my $self = shift;
-    my $id = shift;
-    my $fileid = shift;
-    my $contentids = shift;
-
-    # Either a METS::StructMap::Area or a METS::StructMap::AreaAggregation
-    my $area = shift;
-
+    foreach my $component ( @{ $self->{'components'} } ) {
+        $node->appendChild( METS::objectOrNodeToNode($component) );
+    }
+    return $node;
 }
 
 sub add_div {
     my $self = shift;
-    my $div = shift;
+    my $div  = shift;
+    push( @{ $self->{'components'} }, $div );
 }
 
-package METS::StructMap::AreaAggregation;
+package METS::StructMap::Div;
+
+our @ISA = qw(METS::StructMap);
+
+use strict;
 
 sub new {
     my $class = shift;
-    my $aggtype = shift; #either seq or par
+    my %attrs = @_;
+
+    return bless {
+        components => [],
+        attrs      => METS::copyAttributes(
+            \%attrs, qw(ID ORDER ORDERLABEL LABEL DMDID ADMID TYPE CONTENTIDS)
+        ),
+    }, $class;
 }
 
-sub add_area {
-    # adds either an area or an area aggregation to this
-    # aggregate.
+sub add_fptr {
+    my $self  = shift;
+    my %attrs = @_;
+    my $fptr  = METS::createElement( "fptr",
+        METS::copyAttributes( \%attrs, qw(ID FILEID CONTENTIDS) ) );
+
+    push( @{ $self->{'components'} }, $fptr );
+
+}
+
+sub to_node {
     my $self = shift;
-    my $area = shift;
+    return $self->SUPER::to_node("div");
 }
 
-package METS::StructMap::Area;
-
-# attrs can be id, fileid, shape, coords, begin, end, betype, extent, exttype,
-# admid, contentids
-
-sub new {
-    my $class = shift;
-    my $attrs = shift;
-}
+1;

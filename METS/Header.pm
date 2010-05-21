@@ -31,12 +31,12 @@ sub add_agent {
     my $name  = $attrs{'name'};
     my $notes = $attrs{'notes'};
 
-    METS::checkAttrVal($attrs{'type'},@METS::allowed_AGENT_TYPE);
-    METS::checkAttrVal($attrs{'role'},@METS::allowed_AGENT_ROLE);
+    METS::checkAttrVal( $attrs{'type'}, @METS::allowed_AGENT_TYPE );
+    METS::checkAttrVal( $attrs{'role'}, @METS::allowed_AGENT_ROLE );
 
-    my $agent_node =
-      METS::createElement( "agent",
-        METS::copyAttributes( \%attrs, qw(ID ROLE OTHERROLE TYPE OTHERTYPE) ) );
+    my $agent_node = METS::createElement( "agent",
+        METS::copyAttributes( \%attrs, qw(ID ROLE OTHERROLE TYPE OTHERTYPE) )
+    );
 
     if ( defined $name ) {
         my $name_node = METS::createElement( "name", undef, $name );
@@ -55,9 +55,9 @@ sub add_agent {
 
 # Adds an alternate record ID, will be added to the header
 sub add_alt_record_id {
-    my $self  = shift;
+    my $self          = shift;
     my $alt_record_id = shift;
-    my %attrs = ();
+    my %attrs         = ();
 
     push(
         @{ $self->{'alt_record_ids'} },
@@ -77,8 +77,7 @@ sub set_mets_document_id {
 
     $self->{'mets_document_id'} = METS::createElement(
         "metsDocumentID",
-        {
-            "ID"   => $id,
+        {   "ID"   => $id,
             "TYPE" => $type
         },
         $document_id
@@ -101,7 +100,7 @@ sub to_node {
     }
 
     $node->appendChild( $self->{'mets_document_id'} )
-      if defined $self->{'mets_document_id'};
+        if defined $self->{'mets_document_id'};
 
     return $node;
 }
