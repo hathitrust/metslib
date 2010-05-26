@@ -84,10 +84,26 @@ sub set_xml_file {
 
     # parse xml file
     my $parsed_xml = XML::LibXML->load_xml( location => $xmlfile );
+    $self->set_xml_node($parsed_xml->documentElement(),@_);
+}
+
+sub set_xml_string {
+    my $self = shift;
+    my $xmlstring = shift;
+    my $parsed_xml = XML::LibXML->load_xml( string => $xmlstring );
+    $self->set_xml_node($parsed_xml->documentElement(),@_);
+
+}
+
+sub set_xml_node {
+
+    my $self = shift;
+    my $node = shift;
+    
     $self->set_data(
-        $parsed_xml->documentElement(),
-        mimetype => "text/xml",
-        @_
+	$node,
+	mimetype => "text/xml",
+	@_
     );
 }
 
