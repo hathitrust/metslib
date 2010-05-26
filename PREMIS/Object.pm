@@ -1,0 +1,68 @@
+package PREMIS::Object;
+use strict;
+use PREMIS;
+
+use XML::LibXML;
+
+sub new {
+    my $class = shift;
+    my $id    = shift;
+    return bless {
+        id         => $id,
+        properties => []
+    }, $class;
+}
+
+# Adds a PREMIS "sigificantProperties" element with the given type and value.
+sub add_significant_property {
+    my $self  = shift;
+    my $type  = shift;
+    my $value = shift;
+
+    my $prop_node = createElement("significantProperties");
+    my $type_node
+        = createElement( "significantPropertiesType", undef, $type );
+    my $value_node
+        = createElement( "significantPropertiesValue", undef, $value );
+    $prop_node->appendChild($type_node);
+    $prop_node->appendChild($value_node);
+
+    push( @{ $self->{properties} }, $prop_node );
+}
+
+# Sets the preservation level to be output in the preservationLevel element
+sub set_preservation_level {
+    my $self               = shift;
+    my $preservation_level = shift;
+
+    $self->{'preservation_level'} = $preservation_level;
+}
+
+sub to_node {
+    my $self = shift;
+
+    my $node = PREMIS::createElement("object");
+    if ( defined $self->{'id'} ) {
+        my $identifier = PREMIS::createElement("objectIdentifier");
+        $identifier->appendChild(
+            PREMIS::createElement( "objectIdentifierType", "identifier" ) );
+        $identifier->appendChild(
+            PREMIS::createElement( "objectIdentifierValue", $self->{'id'} ) );
+        $node->appendChild($identifier);
+    }
+
+    if ( defined $self->{'preservation_level'} ) {
+        my $presLevel = PREMIS::createElement("preservationLevel");
+        $presLevel->appendChild(
+            PREMIS::createElement("preservationLevelValue") );
+        $node->appendChild($presLevel);
+    }
+
+    foreach my $property ( @{ $self->{'properties'} } ) {
+        $node->appendChild($property);
+    }
+
+    return $node;
+}
+
+1;
