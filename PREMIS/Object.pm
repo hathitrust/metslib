@@ -6,8 +6,10 @@ use XML::LibXML;
 
 sub new {
     my $class = shift;
+    my $idtype = shift;
     my $id    = shift;
     return bless {
+	idtype	   => $idtype,
         id         => $id,
         properties => []
     }, $class;
@@ -45,7 +47,7 @@ sub to_node {
     if ( defined $self->{'id'} ) {
         my $identifier = PREMIS::createElement("objectIdentifier");
         $identifier->appendChild(
-            PREMIS::createElement( "objectIdentifierType", "identifier" ) );
+            PREMIS::createElement( "objectIdentifierType", $self->{'idtype'} ) );
         $identifier->appendChild(
             PREMIS::createElement( "objectIdentifierValue", $self->{'id'} ) );
         $node->appendChild($identifier);
@@ -54,7 +56,7 @@ sub to_node {
     if ( defined $self->{'preservation_level'} ) {
         my $presLevel = PREMIS::createElement("preservationLevel");
         $presLevel->appendChild(
-            PREMIS::createElement("preservationLevelValue") );
+            PREMIS::createElement("preservationLevelValue","1") );
         $node->appendChild($presLevel);
     }
 

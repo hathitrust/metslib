@@ -11,7 +11,6 @@ my $schema_PREMIS    = "http://www.loc.gov/standards/mets/mets.xsd";
 
 sub new {
     my $class = shift;
-    my %attrs = @_;
     return bless {
         objects => [],
         events  => [],
@@ -58,4 +57,17 @@ sub objectOrNodeToNode {
     else {
         return $thing->to_node();
     }
+}
+
+sub add_object {
+    my $self = shift;
+    my $object = shift;
+
+    push(@{$self->{'objects'}},$object);
+}
+sub add_event {
+    my $self = shift;
+    my $event = shift;
+
+    push(@{$self->{'events'}},$event);
 }
