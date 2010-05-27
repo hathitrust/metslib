@@ -61,4 +61,11 @@ sub add_linking_agent {
     push( @{ $self->{'agents'} }, $agent );
 }
 
+sub add_software_tool {
+    my $self = shift;
+    my $toolname = shift;
+
+    push( @{ $self->{'agents'} }, new PREMIS::LinkingAgent("tool",$toolname,"software");
+}
+
 1;
