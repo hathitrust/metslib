@@ -83,14 +83,16 @@ sub set_xml_file {
     my $xmlfile = shift;
 
     # parse xml file
-    my $parsed_xml = XML::LibXML->load_xml( location => $xmlfile );
+    my $parser = new XML::LibXML;
+    my $parsed_xml = $parser->parse_file( $xmlfile );
     $self->set_xml_node($parsed_xml->documentElement(),@_);
 }
 
 sub set_xml_string {
     my $self = shift;
     my $xmlstring = shift;
-    my $parsed_xml = XML::LibXML->load_xml( string => $xmlstring );
+    my $parser = new XML::LibXML;
+    my $parsed_xml = $parser->parse_string( $xmlstring );
     $self->set_xml_node($parsed_xml->documentElement(),@_);
 
 }

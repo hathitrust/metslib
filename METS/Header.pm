@@ -57,7 +57,7 @@ sub add_agent {
 sub add_alt_record_id {
     my $self          = shift;
     my $alt_record_id = shift;
-    my %attrs         = ();
+    my %attrs         = @_;
 
     push(
         @{ $self->{'alt_record_ids'} },

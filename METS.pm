@@ -7,11 +7,14 @@ use METS::MetadataSection;
 use METS::File;
 use METS::FileGroup;
 use METS::StructMap;
+use METS::ChecksumCache;
 
 my $ns_METS        = "http://www.loc.gov/METS/";
 my $ns_prefix_METS = "METS";
 my $schema_METS    = "http://www.loc.gov/standards/mets/mets.xsd";
+my $ns_prefix_xlink = "xlink";
 my $ns_xlink       = "http://www.w3.org/1999/xlink";
+my $ns_prefix_xsi = "xsi";
 my $ns_xsi         = "http://www.w3.org/2001/XMLSchema-instance";
 our @LOCATION = ( 'LOCTYPE',  'OTHERLOCTYPE' );
 our @METADATA = ( 'MDTYPE',   'OTHERMDTYPE', 'MDTYPEVERSION' );
@@ -65,6 +68,10 @@ sub to_node {
 
         push( @schemaLocations, "$ns $schema" ) if defined $schema;
     }
+    # set utility namespaces that don't have associated schemata
+    $mets_node->setNamespace($ns_xlink,$ns_prefix_xlink,0);
+    $mets_node->setNamespace($ns_xsi,$ns_prefix_xsi,0);
+
     $mets_node->setAttributeNS( $ns_xsi, "xsi:schemaLocation",
         join( " ", @schemaLocations ) )
         if (@schemaLocations);

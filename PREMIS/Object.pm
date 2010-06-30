@@ -4,6 +4,7 @@ use PREMIS;
 
 use XML::LibXML;
 
+my $ns_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 sub new {
     my $class = shift;
     my $idtype = shift;
@@ -44,6 +45,7 @@ sub to_node {
     my $self = shift;
 
     my $node = PREMIS::createElement("object");
+    $node->setAttributeNS($ns_xsi,"xsi:type","PREMIS:representation");
     if ( defined $self->{'id'} ) {
         my $identifier = PREMIS::createElement("objectIdentifier");
         $identifier->appendChild(

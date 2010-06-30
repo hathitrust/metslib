@@ -4,9 +4,11 @@ use strict;
 use XML::LibXML;
 use PREMIS::Object;
 use PREMIS::Event;
+use PREMIS::LinkingAgent;
+use PREMIS::Outcome;
 
-my $ns_PREMIS        = "http://www.loc.gov/METS/";
-my $ns_prefix_PREMIS = "METS";
+my $ns_PREMIS        = "info:lc/xmlns/premis-v2";
+my $ns_prefix_PREMIS = "PREMIS";
 my $schema_PREMIS    = "http://www.loc.gov/standards/mets/mets.xsd";
 
 sub new {
@@ -21,7 +23,8 @@ sub new {
 sub to_node {
     my $self = shift;
 
-    my $node = createElement( "premis", version => "2.0" );
+    my $node = createElement( "premis");
+    $node->setAttribute("version" => "2.0");
 
     foreach my $object ( @{ $self->{objects} } ) {
         $node->appendChild( objectOrNodeToNode($object) );

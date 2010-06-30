@@ -1,19 +1,20 @@
 package PREMIS::Event;
 use strict;
 use PREMIS;
+use PREMIS::LinkingAgent;
 
 use XML::LibXML;
 
 sub new {
     my $class    = shift;
-    my $idtype   = shift;
     my $id       = shift;
-    my $type     = shift;
+    my $idtype   = shift;
+    my $eventtype     = shift;
     my $datetime = shift;
     my $detail   = shift;
     my $self     = bless {
         agents     => [],
-        event_type => $type,
+        event_type => $eventtype,
         datetime   => $datetime,
         detail     => $detail,
 
@@ -32,7 +33,7 @@ sub set_identifier {
     $node->appendChild( PREMIS::createElement("eventIdentifierType") );
     $node->appendChild( PREMIS::createElement("eventIdentifierValue") );
 
-    $self->{'identifer'} = $node;
+    $self->{'identifier'} = $node;
 
 }
 
@@ -40,7 +41,7 @@ sub to_node {
     my $self = shift;
 
     my $node = PREMIS::createElement("event");
-    $node->appendChild( $self->{'identifier'} );
+    $node->appendChild( $self->{'identifier'} ) if(defined $self->{'identifier'});
     $node->appendChild(
         PREMIS::createElement( "eventType", $self->{'event_type'} ) );
     $node->appendChild(
@@ -48,9 +49,15 @@ sub to_node {
     $node->appendChild(
         PREMIS::createElement( "eventDetail", $self->{'detail'} ) );
 
+    foreach my $event_outcome (@{$self->{'outcome'}}) {
+	$node->appendChild($event_outcome->to_node());
+    }
+
     foreach my $agent ( @{ $self->{'agents'} } ) {
         $node->appendChild( PREMIS::objectOrNodeToNode($agent) );
     }
+
+    return $node;
 }
 
 sub add_linking_agent {
@@ -65,7 +72,14 @@ sub add_software_tool {
     my $self = shift;
     my $toolname = shift;
 
-    push( @{ $self->{'agents'} }, new PREMIS::LinkingAgent("tool",$toolname,"software");
+    push( @{ $self->{'agents'} }, new PREMIS::LinkingAgent("tool",$toolname,"software"));
+}
+
+sub add_outcome {
+    my $self = shift;
+    my $outcome = shift;
+
+    push( @{$self->{'outcomes'} },$outcome);
 }
 
 1;

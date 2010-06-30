@@ -20,12 +20,12 @@ sub to_node {
     my $self = shift;
 
     my $node = PREMIS::createElement("linkingAgentIdentifier");
-    $node->appendChild( PREMIS::createElement("linkingAgentIdentifierType"),
-        $self->{'type'} );
-    $node->appendChild( PREMIS::createElement("linkingAgentIdentifierValue"),
-        $self->{'value'} );
-    $node->appendChild( PREMIS::createElement("linkingAgentRole"),
-        $self->{'role'} );
+    $node->appendChild( PREMIS::createElement("linkingAgentIdentifierType",
+        $self->{'type'} ));
+    $node->appendChild( PREMIS::createElement("linkingAgentIdentifierValue",
+        $self->{'value'} ));
+    $node->appendChild( PREMIS::createElement("linkingAgentRole",
+        $self->{'role'} ));
 
     return $node;
 }

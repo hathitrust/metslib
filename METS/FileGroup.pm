@@ -12,7 +12,8 @@ sub new {
         components => [],
         attrs => METS::copyAttributes( \%attrs, qw(ID VERSDATE ADMID USE) ),
         prefix_count => {},
-        fileids      => {}
+        fileids      => {},
+	seq	     => 0 # counter for SEQ attribute
     }, $class;
 }
 
@@ -23,6 +24,13 @@ sub get_file_id {
     my $id = $self->{'fileids'}{$filename};
     die("File ID requested for unknown file $filename") unless $id;
     return $id;
+}
+
+# The given hash should map from filenames to their checksums.
+sub set_checksum_cache {
+    my $self = shift;
+    my $checksums = shift;
+    $self->{'checksum_cache'} = $checksums;
 }
 
 # Add a file from a DOM element or a METS::File object.
@@ -36,12 +44,15 @@ sub add_file {
         $self->{'fileids'}{$filename} = $attrs{'id'};
     }
 
+    $self->{'seq'}++;
+    $attrs{seq} = sprintf("%08d",$self->{'seq'});
+
     if ( defined $self->{'checksum_cache'} ) {
         my $checksum = $self->{'checksum_cache'}->get_checksum($filename);
         if ( defined $checksum ) {
             $attrs{'checksum'} = $checksum;
             $attrs{'checksumtype'}
-                = $self->{'checksum_cache'}->checksum_type();
+                = $self->{'checksum_cache'}->get_checksum_type();
         }
     }
 
