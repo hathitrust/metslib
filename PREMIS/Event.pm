@@ -30,8 +30,8 @@ sub set_identifier {
     my $value = shift;
 
     my $node = PREMIS::createElement("eventIdentifier");
-    $node->appendChild( PREMIS::createElement("eventIdentifierType") );
-    $node->appendChild( PREMIS::createElement("eventIdentifierValue") );
+    $node->appendChild( PREMIS::createElement("eventIdentifierType", $type));
+    $node->appendChild( PREMIS::createElement("eventIdentifierValue", $value));
 
     $self->{'identifier'} = $node;
 
@@ -49,7 +49,7 @@ sub to_node {
     $node->appendChild(
         PREMIS::createElement( "eventDetail", $self->{'detail'} ) );
 
-    foreach my $event_outcome (@{$self->{'outcome'}}) {
+    foreach my $event_outcome (@{$self->{'outcomes'}}) {
 	$node->appendChild($event_outcome->to_node());
     }
 

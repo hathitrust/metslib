@@ -16,6 +16,8 @@ my $ns_prefix_xlink = "xlink";
 my $ns_xlink       = "http://www.w3.org/1999/xlink";
 my $ns_prefix_xsi = "xsi";
 my $ns_xsi         = "http://www.w3.org/2001/XMLSchema-instance";
+my $ns_prefix_ht  = "HT";
+my $ns_ht 	= "http://www.hathitrust.org/premis_extension";
 our @LOCATION = ( 'LOCTYPE',  'OTHERLOCTYPE' );
 our @METADATA = ( 'MDTYPE',   'OTHERMDTYPE', 'MDTYPEVERSION' );
 our @FILECORE = ( 'MIMETYPE', 'SIZE', 'CREATED', 'CHECKSUM', 'CHECKSUMTYPE' );
@@ -71,6 +73,7 @@ sub to_node {
     # set utility namespaces that don't have associated schemata
     $mets_node->setNamespace($ns_xlink,$ns_prefix_xlink,0);
     $mets_node->setNamespace($ns_xsi,$ns_prefix_xsi,0);
+    $mets_node->setNamespace($ns_ht,$ns_prefix_ht,0);
 
     $mets_node->setAttributeNS( $ns_xsi, "xsi:schemaLocation",
         join( " ", @schemaLocations ) )
