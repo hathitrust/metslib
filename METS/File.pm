@@ -5,7 +5,7 @@ use POSIX qw(strftime);
 use XML::LibXML;
 
 # TODO: move to global config
-our %mime_map = {
+our $mime_map = {
     'zip' => 'application/zip',
     'jpg' => 'image/jpeg',
     'tif' => 'image/tiff',
@@ -87,7 +87,11 @@ sub get_mimetype {
     my $self = shift;
     my $filename = $self->{'local_file'};
     my ($suffix) = ($filename =~ /\.([^.])+$/);
-    return 'application/octet-stream' if not defined $suffix;
+    if(defined $suffix and defined $mime_map->{$suffix}) {
+	return $mime_map->{suffix};
+    } else {
+	return 'application/octet-stream';
+    }
 }
 
 1;
