@@ -50,7 +50,7 @@ sub to_node {
         PREMIS::createElement( "eventDetail", $self->{'detail'} ) );
 
     foreach my $event_outcome (@{$self->{'outcomes'}}) {
-	$node->appendChild($event_outcome->to_node());
+	$node->appendChild( PREMIS::objectOrNodeToNode($event_outcome));
     }
 
     foreach my $agent ( @{ $self->{'agents'} } ) {
