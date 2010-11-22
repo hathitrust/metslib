@@ -4,6 +4,17 @@ use POSIX qw(strftime);
 
 use XML::LibXML;
 
+# TODO: move to global config
+our $mime_map = {
+    'zip' => 'application/zip',
+    'jpg' => 'image/jpeg',
+    'tif' => 'image/tiff',
+    'jp2' => 'image/jp2',
+    'txt' => 'text/plain',
+    'html' => 'text/html',
+    'xml' => 'text/xml'
+};
+
 sub new {
     my $class = shift;
     my %attrs = @_;
@@ -33,6 +44,9 @@ sub set_local_file {
     # creation time
     $self->{'attrs'}{'CREATED'} = $mtime
         if not defined $self->{'attrs'}{'CREATED'};
+
+    $self->{'attrs'}{'MIMETYPE'} = $self->get_mimetype()
+	if ( not defined $self->{'attrs'}{'MIMETYPE'} );
 
 }
 
@@ -67,6 +81,17 @@ sub to_node {
     }
     return $node;
 
+}
+
+sub get_mimetype {
+    my $self = shift;
+    my $filename = $self->{'local_file'};
+    my ($suffix) = ($filename =~ /\.([^.])+$/);
+    if(defined $suffix and defined $mime_map->{$suffix}) {
+	return $mime_map->{suffix};
+    } else {
+	return 'application/octet-stream';
+    }
 }
 
 1;

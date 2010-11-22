@@ -58,7 +58,7 @@ sub to_node {
     if ( defined $self->{'preservation_level'} ) {
         my $presLevel = PREMIS::createElement("preservationLevel");
         $presLevel->appendChild(
-            PREMIS::createElement("preservationLevelValue","1") );
+            PREMIS::createElement("preservationLevelValue",$self->{'preservation_level'}) );
         $node->appendChild($presLevel);
     }
 
