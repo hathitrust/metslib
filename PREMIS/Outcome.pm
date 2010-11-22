@@ -1,6 +1,7 @@
 package PREMIS::Outcome;
 
 use strict;
+use PREMIS;
 
 my $ns_HT = "http://www.hathitrust.org/premis_extension";
 my $ns_prefix_HT = "HT";
