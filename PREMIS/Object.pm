@@ -24,9 +24,9 @@ sub add_significant_property {
 
     my $prop_node = PREMIS::createElement("significantProperties");
     my $type_node
-        = PREMIS::createElement( "significantPropertiesType", undef, $type );
+        = PREMIS::createElement( "significantPropertiesType", $type );
     my $value_node
-        = PREMIS::createElement( "significantPropertiesValue", undef, $value );
+        = PREMIS::createElement( "significantPropertiesValue", $value );
     $prop_node->appendChild($type_node);
     $prop_node->appendChild($value_node);
 

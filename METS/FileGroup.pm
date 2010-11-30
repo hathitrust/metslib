@@ -2,6 +2,7 @@
 
 package METS::FileGroup;
 use strict;
+use Carp qw(croak);
 
 use XML::LibXML;
 
@@ -22,7 +23,7 @@ sub get_file_id {
     my $filename = shift;
 
     my $id = $self->{'fileids'}{$filename};
-    die("File ID requested for unknown file $filename") unless $id;
+    croak("File ID requested for unknown file $filename") unless $id;
     return $id;
 }
 

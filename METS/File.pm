@@ -86,9 +86,9 @@ sub to_node {
 sub get_mimetype {
     my $self = shift;
     my $filename = $self->{'local_file'};
-    my ($suffix) = ($filename =~ /\.([^.])+$/);
+    my ($suffix) = ($filename =~ /\.([^.]+)$/);
     if(defined $suffix and defined $mime_map->{$suffix}) {
-	return $mime_map->{suffix};
+	return $mime_map->{$suffix};
     } else {
 	return 'application/octet-stream';
     }
