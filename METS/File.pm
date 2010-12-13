@@ -1,6 +1,7 @@
 package METS::File;
 use strict;
 use POSIX qw(strftime);
+use Carp qw(croak);
 
 use XML::LibXML;
 
@@ -35,7 +36,7 @@ sub set_local_file {
         if ( not defined $self->{'attrs'}{'CHECKSUM'} );
 
     my @stat = stat( $self->{'local_file'} )
-        or die("Cannot stat $self->{'local_file'}");
+        or croak("Cannot stat $self->{'local_file'}");
     my $size = $stat[7];
     my $mtime = strftime( "%Y-%m-%dT%H:%M:%S", localtime( $stat[9] ) );
     $self->{'attrs'}{'SIZE'} = $size if not defined $self->{'attrs'}{'SIZE'};
@@ -52,12 +53,12 @@ sub set_local_file {
 
 sub compute_md5_checksum {
     my $self = shift;
-    die("Don't know how to find the file")
+    croak("Don't know how to find the file")
         unless defined $self->{'local_file'};
     my $file = $self->{'local_file'};
 
     require Digest::MD5;
-    open( FILE, $file ) or die "Can't open '$file': $!";
+    open( FILE, $file ) or croak "Can't open '$file': $!";
     binmode(FILE);
 
     my $digest = Digest::MD5->new->addfile(*FILE)->hexdigest;

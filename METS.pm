@@ -137,14 +137,6 @@ sub add_amd_sec {
     push( @{ $self->{amdsecs} }, { id => $id, sections => \@_ } );
 }
 
-# Add a file group from a DOM element or a METS::FileGroup object.
-sub add_file_group {
-    my $self      = shift;
-    my $id        = shift;
-    my $filegroup = shift;
-
-}
-
 # Add a structMap from a DOM element or a METS::StructMap object
 sub add_struct_map {
     my $self      = shift;
