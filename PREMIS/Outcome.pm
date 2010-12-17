@@ -11,8 +11,18 @@ sub new {
     my $outcome = shift;
     return bless {
         outcome => $outcome,
-	detail => []
+        detail => []
     }, $class;
+}
+
+sub add_detail_note {
+    my $self = shift;
+    my $note = shift;
+
+    my $node = PREMIS::createElement("eventOutcomeDetail");
+    $node->appendChild( PREMIS::createElement("eventOutcomeDetailNote", $note));
+
+    push(@{$self->{'detail'}},$node);
 }
 
 sub add_file_list_detail {
@@ -33,10 +43,10 @@ sub add_file_list_detail {
     $ext_node->appendChild($filelist_node);
 
     foreach my $file (@$file_list) {
-	my $file_node = new XML::LibXML::Element("file");
-	$file_node->setNamespace( $ns_HT, $ns_prefix_HT);
-	$file_node->appendText($file);
-	$filelist_node->appendChild($file_node);
+        my $file_node = new XML::LibXML::Element("file");
+        $file_node->setNamespace( $ns_HT, $ns_prefix_HT);
+        $file_node->appendText($file);
+        $filelist_node->appendChild($file_node);
     }
 
     push(@{$self->{'detail'}},$node);
@@ -49,7 +59,7 @@ sub to_node {
     $node->appendChild( PREMIS::createElement("eventOutcome",$self->{'outcome'}));
 
     foreach my $detail (@{$self->{'detail'}}) {
-	$node->appendChild($detail);
+        $node->appendChild($detail);
     }
 
     return $node;
