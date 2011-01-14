@@ -31,11 +31,13 @@ sub new {
 sub set_local_file {
     my $self = shift;
     $self->{'local_file'} = shift;
+    $self->{'path'} = (shift or "");
+    if($self->{'path'}) { $self->{'path'} .= "/"; }
 
     $self->compute_md5_checksum()
         if ( not defined $self->{'attrs'}{'CHECKSUM'} );
 
-    my @stat = stat( $self->{'local_file'} )
+    my @stat = stat( $self->{'path'} . $self->{'local_file'} )
         or croak("Cannot stat $self->{'local_file'}");
     my $size = $stat[7];
     my $mtime = strftime( "%Y-%m-%dT%H:%M:%S", localtime( $stat[9] ) );
@@ -55,7 +57,7 @@ sub compute_md5_checksum {
     my $self = shift;
     croak("Don't know how to find the file")
         unless defined $self->{'local_file'};
-    my $file = $self->{'local_file'};
+    my $file = $self->{'path'} . $self->{'local_file'};
 
     require Digest::MD5;
     open( FILE, $file ) or croak "Can't open '$file': $!";

@@ -35,6 +35,8 @@ sub set_checksum_cache {
 }
 
 # Add a file from a DOM element or a METS::File object.
+# Additional parameter 'path' gives temporary staging
+# path to object.
 sub add_file {
     my $self     = shift;
     my $filename = shift;
@@ -43,6 +45,13 @@ sub add_file {
     if ( not defined $attrs{'id'} ) {
         $attrs{'id'} = $self->get_next_id( $attrs{'prefix'} );
         $self->{'fileids'}{$filename} = $attrs{'id'};
+    }
+
+    # path for staging.
+    my $path = undef;
+    if ( defined $attrs{'path'} ) {
+        $path = $attrs{'path'};
+        delete $attrs{'path'};
     }
 
     $self->{'seq'}++;
@@ -58,7 +67,7 @@ sub add_file {
     }
 
     my $file = new METS::File(%attrs);
-    $file->set_local_file($filename);
+    $file->set_local_file($filename,$path);
 
     push( @{ $self->{'components'} }, $file );
 
