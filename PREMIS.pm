@@ -19,6 +19,23 @@ sub new {
     }, $class;
 }
 
+sub sort_date {
+    my ($date1,$date2);
+    $date1 = $a->{datetime} if(exists $a->{datetime}) ;
+    $date2 = $b->{datetime} if(exists $b->{datetime}) ;
+
+    if(ref($a) eq 'XML::LibXML::Element') {
+        $date1 = ( $a->getChildrenByTagNameNS($ns_PREMIS,"eventDateTime") )[0]->textContent();
+    }
+    if(ref($b) eq 'XML::LibXML::Element') {
+        $date2 = ( $b->getChildrenByTagNameNS($ns_PREMIS,"eventDateTime") )[0]->textContent();
+    }
+    if(not defined $date1 or not defined $date2) {
+        croak("Missing date for PREMIS event");
+    }
+    return $date1 cmp $date2;
+}
+
 # Return the PREMIS node
 sub to_node {
     my $self = shift;
@@ -30,7 +47,8 @@ sub to_node {
         $node->appendChild( objectOrNodeToNode($object) );
     }
 
-    foreach my $event ( @{ $self->{events} } ) {
+    # sort events by date before adding
+    foreach my $event ( sort sort_date @{ $self->{events} } ) {
         $node->appendChild( objectOrNodeToNode($event) );
     }
 
