@@ -44,6 +44,14 @@ sub set_md_ref {
 
 }
 
+# Use md_wrap directly from another METS file
+sub set_mdwrap {
+    my $self = shift;
+    my $mdwrap = shift;
+
+    $self->{'mdwrap'} = $mdwrap;
+}
+
 # Embed data in the metadata section
 sub set_data {
     my $self  = shift;
