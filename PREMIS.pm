@@ -6,6 +6,7 @@ use PREMIS::Object;
 use PREMIS::Event;
 use PREMIS::LinkingAgent;
 use PREMIS::Outcome;
+use Carp qw(croak);
 
 my $ns_PREMIS        = "info:lc/xmlns/premis-v2";
 my $ns_prefix_PREMIS = "PREMIS";
@@ -21,8 +22,6 @@ sub new {
 
 sub sort_date {
     my ($date1,$date2);
-    $date1 = $a->{datetime} if(exists $a->{datetime}) ;
-    $date2 = $b->{datetime} if(exists $b->{datetime}) ;
 
     if(ref($a) eq 'XML::LibXML::Element') {
         $date1 = ( $a->getChildrenByTagNameNS($ns_PREMIS,"eventDateTime") )[0]->textContent();
@@ -30,6 +29,9 @@ sub sort_date {
     if(ref($b) eq 'XML::LibXML::Element') {
         $date2 = ( $b->getChildrenByTagNameNS($ns_PREMIS,"eventDateTime") )[0]->textContent();
     }
+    $date1 = $a->{datetime} if($a->isa("PREMIS::Event") and exists $a->{datetime}) ;
+    $date2 = $b->{datetime} if($b->isa("PREMIS::Event") and exists $b->{datetime}) ;
+
     if(not defined $date1 or not defined $date2) {
         croak("Missing date for PREMIS event");
     }
