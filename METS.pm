@@ -9,6 +9,35 @@ use METS::FileGroup;
 use METS::StructMap;
 use METS::ChecksumCache;
 
+=head1 NAME
+
+METS - library to create METS XML.
+
+=head1 SYNOPSIS
+
+my $mets = METS->new(...);
+
+$mets->set_header(...);
+$mets->add_dmd_sec(...);
+$mets->add_amd_sec(...);
+$mets->add_filegroup(...);
+$mets->add_struct_map(...);
+
+print $mets->to_node()->toString();
+
+khead1 DESCRIPTION
+
+This module assists with creating XML documents following the Metadata Encoding
+& Transmission Standards (METS) schema from the Library of Congress. Most major
+features of METS are supported.
+
+See L<the METS home page|http://www.loc.gov/standards/mets/> for more
+information.
+
+=head1 METHODS
+
+=cut
+
 my $ns_METS        = "http://www.loc.gov/METS/";
 my $ns_prefix_METS = "METS";
 my $schema_METS    = "http://www.loc.gov/standards/mets/mets.xsd";
@@ -229,3 +258,21 @@ sub add_filegroup {
     my $filegroup = shift;
     push( @{ $self->{'filegroups'} }, $filegroup );
 }
+
+1;
+
+__END__
+
+=head1 AUTHOR
+
+Aaron Elkiss, University of Michigan, <aelkiss@umich.edu>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2010-2012 University of Michigan. All rights reserved.  This
+program is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
+
+=cut
+
+
