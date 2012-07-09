@@ -56,7 +56,7 @@ sub to_node {
     my $self = shift;
     my $node = PREMIS::createElement("eventOutcomeInformation");
 
-    $node->appendChild( PREMIS::createElement("eventOutcome",$self->{'outcome'}));
+    $node->appendChild( PREMIS::createElement("eventOutcome",$self->{'outcome'})) if defined $self->{'outcome'};
 
     foreach my $detail (@{$self->{'detail'}}) {
         $node->appendChild($detail);
