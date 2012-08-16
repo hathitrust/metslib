@@ -40,7 +40,7 @@ sub set_local_file {
     my @stat = stat( $self->{'path'} . $self->{'local_file'} )
         or croak("Cannot stat $self->{'local_file'}");
     my $size = $stat[7];
-    my $mtime = strftime( "%Y-%m-%dT%H:%M:%S", localtime( $stat[9] ) );
+    my $mtime = strftime( "%Y-%m-%dT%H:%M:%SZ", gmtime( $stat[9] ) );
     $self->{'attrs'}{'SIZE'} = $size if not defined $self->{'attrs'}{'SIZE'};
 
     # By default use the mtime since there's no reliable way to get the
