@@ -13,7 +13,8 @@ our $mime_map = {
     'jp2' => 'image/jp2',
     'txt' => 'text/plain',
     'html' => 'text/html',
-    'xml' => 'text/xml'
+    'xml' => 'text/xml',
+    'pdf' => 'application/pdf',
 };
 
 sub new {
