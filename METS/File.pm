@@ -2,6 +2,7 @@ package METS::File;
 use strict;
 use POSIX qw(strftime);
 use Carp qw(croak);
+use URI::Escape;
 
 use XML::LibXML;
 
@@ -79,7 +80,7 @@ sub to_node {
     if ( defined $self->{'local_file'} ) {
         my $flocat = METS::createElement( "FLocat",
             { LOCTYPE => 'OTHER', OTHERLOCTYPE => 'SYSTEM' } );
-        METS::setXLink( $flocat, { href => $self->{'local_file'} } );
+        METS::setXLink( $flocat, { href => uri_escape($self->{'local_file'}) } );
         $node->appendChild($flocat);
 
     }
