@@ -80,7 +80,16 @@ sub to_node {
     if ( defined $self->{'local_file'} ) {
         my $flocat = METS::createElement( "FLocat",
             { LOCTYPE => 'OTHER', OTHERLOCTYPE => 'SYSTEM' } );
-        METS::setXLink( $flocat, { href => uri_escape($self->{'local_file'}) } );
+        # only escape things that are required to be escaped
+        # see http://www.schemacentral.com/sc/xsd/t-xsd_anyURI.html
+        #  "URIs require that some characters be escaped with their hexadecimal
+        #  Unicode code point preceded by the % character. This includes
+        #  non-ASCII characters and some ASCII characters, namely control
+        #  characters, spaces, and the following characters (unless they are
+        #  used as deliimiters in the URI): <>#%{}|\^`"
+        METS::setXLink( $flocat, { href =>
+                uri_escape($self->{'local_file'},"\x00-\x1f\x7f-\xff<>#\%{}|\\^`
+                    ") } );
         $node->appendChild($flocat);
 
     }
