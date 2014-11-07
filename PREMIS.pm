@@ -16,7 +16,7 @@ sub new {
     my $class = shift;
     return bless {
         objects => [],
-        events  => [],
+        events  => {},
     }, $class;
 }
 
@@ -50,7 +50,7 @@ sub to_node {
     }
 
     # sort events by date before adding
-    foreach my $event ( sort sort_date @{ $self->{events} } ) {
+    foreach my $event ( sort sort_date values %{ $self->{events} } ) {
         $node->appendChild( objectOrNodeToNode($event) );
     }
 
@@ -92,5 +92,16 @@ sub add_event {
     my $self = shift;
     my $event = shift;
 
-    push(@{$self->{'events'}},$event);
+    my $eventid;
+    if($event->isa('PREMIS::Event')) {
+      $eventid = $event->{'identifier'};
+    } elsif($event->isa('XML::LibXML::Element')) {
+      $eventid = ($event->getChildrenByTagNameNS($ns_PREMIS,'eventIdentifier'))[0];
+    } else {
+      die("Missing eventid") if not defined $eventid;
+    }
+    my $eventidvalue = ($eventid->getChildrenByTagNameNS($ns_PREMIS,'eventIdentifierValue'))[0];
+    die("Missing eventid") if not defined $eventidvalue;
+
+    $self->{'events'}{$eventidvalue} = $event;
 }
