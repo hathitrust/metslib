@@ -3,8 +3,8 @@ package PREMIS::Outcome;
 use strict;
 use PREMIS;
 
-my $ns_HT = "http://www.hathitrust.org/premis_extension";
-my $ns_prefix_HT = "HT";
+my $ns_HTPREMIS = "http://www.hathitrust.org/premis_extension";
+my $ns_prefix_HTPREMIS = "HTPREMIS";
 
 sub new {
     my $class = shift;
@@ -37,14 +37,14 @@ sub add_file_list_detail {
     my $ext_node = PREMIS::createElement("eventOutcomeDetailExtension");
     $node->appendChild($ext_node);
     my $filelist_node = new XML::LibXML::Element("fileList");
-    $filelist_node->setNamespace($ns_HT,$ns_prefix_HT);
+    $filelist_node->setNamespace($ns_HTPREMIS,$ns_prefix_HTPREMIS);
     $filelist_node->setAttribute("status",$fail_type);
 
     $ext_node->appendChild($filelist_node);
 
     foreach my $file (@$file_list) {
         my $file_node = new XML::LibXML::Element("file");
-        $file_node->setNamespace( $ns_HT, $ns_prefix_HT);
+        $file_node->setNamespace( $ns_HTPREMIS, $ns_prefix_HTPREMIS);
         $file_node->appendText($file);
         $filelist_node->appendChild($file_node);
     }
