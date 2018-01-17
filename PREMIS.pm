@@ -100,7 +100,7 @@ sub add_event {
     } else {
       die("Missing eventid") if not defined $eventid;
     }
-    my $eventidvalue = ($eventid->getChildrenByTagNameNS($ns_PREMIS,'eventIdentifierValue'))[0];
+    my $eventidvalue = ($eventid->getChildrenByTagNameNS($ns_PREMIS,'eventIdentifierValue'))[0]->textContent();
     die("Missing eventid") if not defined $eventidvalue;
 
     $self->{'events'}{$eventidvalue} = $event;
