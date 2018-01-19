@@ -20,14 +20,16 @@ our $mime_map = {
 
 sub new {
     my $class = shift;
+    my $filegroup = shift;
     my %attrs = @_;
     return bless {
         attrs => METS::copyAttributes(
             \%attrs, qw(ID SEQ), @METS::FILECORE,
             qw(OWNERID ADMID DMDID GROUPID USE BEGIN END BETYPE)
-        )
+        ),
+        components => [],
+        filegroup => $filegroup,
     }, $class;
-    subfiles => [];
 }
 
 sub set_local_file {
@@ -96,6 +98,10 @@ sub to_node {
         $node->appendChild($flocat);
 
     }
+
+    foreach my $item ( @{ $self->{'components'} } ) {
+        $node->appendChild( $item->to_node() );
+    }
     return $node;
 
 }
@@ -109,6 +115,16 @@ sub get_mimetype {
     } else {
 	return 'application/octet-stream';
     }
+}
+
+# Add a file from a DOM element or a METS::File object.
+# Additional parameter 'path' gives temporary staging
+# path to object.
+sub add_file {
+  my $self = shift;
+
+  push( @{ $self->{'components'} }, $self->{filegroup}->make_file(@_));
+
 }
 
 1;

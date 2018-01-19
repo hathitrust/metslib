@@ -34,42 +34,51 @@ sub set_checksum_cache {
     $self->{'checksum_cache'} = $checksums;
 }
 
+sub make_file {
+  my $self = shift;
+  my $filename = shift;
+  my %attrs = @_;
+
+  if ( not defined $attrs{'id'} ) {
+      $attrs{'id'} = $self->get_next_id( $attrs{'prefix'} );
+      $self->{'fileids'}{$filename} = $attrs{'id'};
+  }
+
+  # path for staging.
+  my $path = undef;
+  if ( defined $attrs{'path'} ) {
+      $path = $attrs{'path'};
+      delete $attrs{'path'};
+  }
+
+  $self->{'seq'}++;
+  $attrs{seq} = sprintf("%08d",$self->{'seq'});
+
+  if ( defined $self->{'checksum_cache'} ) {
+      my $checksum = $self->{'checksum_cache'}->get_checksum($filename);
+      if ( defined $checksum ) {
+          $attrs{'checksum'} = $checksum;
+          $attrs{'checksumtype'}
+              = $self->{'checksum_cache'}->get_checksum_type();
+      }
+  }
+
+  my $file = new METS::File($self, %attrs);
+  $file->set_local_file($filename,$path);
+
+  return $file;
+}
+
 # Add a file from a DOM element or a METS::File object.
 # Additional parameter 'path' gives temporary staging
 # path to object.
 sub add_file {
     my $self     = shift;
-    my $filename = shift;
-    my %attrs    = @_;
 
-    if ( not defined $attrs{'id'} ) {
-        $attrs{'id'} = $self->get_next_id( $attrs{'prefix'} );
-        $self->{'fileids'}{$filename} = $attrs{'id'};
-    }
+    my $file = $self->make_file(@_);
 
-    # path for staging.
-    my $path = undef;
-    if ( defined $attrs{'path'} ) {
-        $path = $attrs{'path'};
-        delete $attrs{'path'};
-    }
 
-    $self->{'seq'}++;
-    $attrs{seq} = sprintf("%08d",$self->{'seq'});
-
-    if ( defined $self->{'checksum_cache'} ) {
-        my $checksum = $self->{'checksum_cache'}->get_checksum($filename);
-        if ( defined $checksum ) {
-            $attrs{'checksum'} = $checksum;
-            $attrs{'checksumtype'}
-                = $self->{'checksum_cache'}->get_checksum_type();
-        }
-    }
-
-    my $file = new METS::File(%attrs);
-    $file->set_local_file($filename,$path);
-
-    push( @{ $self->{'components'} }, $file );
+    push( @{ $self->{'components'} }, $self->make_file(@_) );
 
 }
 
