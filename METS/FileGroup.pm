@@ -34,15 +34,35 @@ sub set_checksum_cache {
     $self->{'checksum_cache'} = $checksums;
 }
 
-sub make_file {
+sub next_seq {
+  my $self = shift;
+
+  $self->{'seq'}++;
+  return sprintf("%08d",$self->{'seq'});
+}
+
+sub assign_id {
+  my $self = shift;
+  my $prefix = shift;
+  my $filename = shift;
+
+  my $id = $self->get_next_id( $prefix );
+  $self->{'fileids'}{$filename} = $id;
+}
+
+# Add a file from a DOM element or a METS::File object.
+# Additional parameter 'path' gives temporary staging
+# path to object.
+sub add_file {
   my $self = shift;
   my $filename = shift;
   my %attrs = @_;
 
   if ( not defined $attrs{'id'} ) {
-      $attrs{'id'} = $self->get_next_id( $attrs{'prefix'} );
-      $self->{'fileids'}{$filename} = $attrs{'id'};
+    $attrs{'id'} = $self->assign_id($attrs{'prefix'},$filename);
   }
+
+  $attrs{seq} = $self->next_seq; 
 
   # path for staging.
   my $path = undef;
@@ -50,9 +70,6 @@ sub make_file {
       $path = $attrs{'path'};
       delete $attrs{'path'};
   }
-
-  $self->{'seq'}++;
-  $attrs{seq} = sprintf("%08d",$self->{'seq'});
 
   if ( defined $self->{'checksum_cache'} ) {
       my $checksum = $self->{'checksum_cache'}->get_checksum($filename);
@@ -65,21 +82,7 @@ sub make_file {
 
   my $file = new METS::File($self, %attrs);
   $file->set_local_file($filename,$path);
-
-  return $file;
-}
-
-# Add a file from a DOM element or a METS::File object.
-# Additional parameter 'path' gives temporary staging
-# path to object.
-sub add_file {
-    my $self     = shift;
-
-    my $file = $self->make_file(@_);
-
-
-    push( @{ $self->{'components'} }, $self->make_file(@_) );
-
+  push( @{ $self->{'components'} }, $file );
 }
 
 sub add_files {

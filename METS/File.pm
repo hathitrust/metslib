@@ -3,6 +3,7 @@ use strict;
 use POSIX qw(strftime);
 use Carp qw(croak);
 use URI::Escape;
+use METS::Subfile;
 
 use XML::LibXML;
 
@@ -84,7 +85,7 @@ sub to_node {
 
     if ( defined $self->{'local_file'} ) {
         my $flocat = METS::createElement( "FLocat",
-            { LOCTYPE => 'OTHER', OTHERLOCTYPE => 'SYSTEM' } );
+          $self->loctype );
         # only escape things that are required to be escaped
         # see http://www.schemacentral.com/sc/xsd/t-xsd_anyURI.html
         #  "URIs require that some characters be escaped with their hexadecimal
@@ -106,6 +107,10 @@ sub to_node {
 
 }
 
+sub loctype {
+  return { LOCTYPE => 'OTHER', OTHERLOCTYPE => 'SYSTEM' };
+}
+
 sub get_mimetype {
     my $self = shift;
     my $filename = $self->{'local_file'};
@@ -119,11 +124,18 @@ sub get_mimetype {
 
 # Add a file from a DOM element or a METS::File object.
 # Additional parameter 'path' gives temporary staging
-# path to object.
-sub add_file {
+# path to object.  File isn't expected to actually exist on disk (but it can)
+sub add_sub_file {
   my $self = shift;
+  my $filename = shift;
+  my %attrs = @_;
 
-  push( @{ $self->{'components'} }, $self->{filegroup}->make_file(@_));
+  $attrs{seq} = $self->{filegroup}->next_seq; 
+  $attrs{id} = $self->{filegroup}->assign_id($attrs{prefix}, $filename);
+
+  my $subfile = METS::Subfile->new($filename,%attrs);
+  push( @{ $self->{'components'} }, $subfile);
+  $subfile->set_local_file($filename);
 
 }
 
