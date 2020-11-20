@@ -17,6 +17,9 @@ our $mime_map = {
     'html' => 'text/html',
     'xml' => 'text/xml',
     'pdf' => 'application/pdf',
+    'epub' => 'application/epub+zip',
+    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'rtf' => 'application/rtf'
 };
 
 sub new {
