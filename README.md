@@ -1,4 +1,23 @@
-# Example
+# METS and PREMIS generation for PERL
+
+This library supports generating METS (1.x) and PREMIS-in-METS (2.x) with perl.
+
+## Installation
+
+```bash
+git clone https://github.com/hathitrust/metslib
+perl Makefile.PL
+make
+make install
+```
+
+Or
+
+```bash
+cpanm install git://github.com/hathitrust/metslib
+```
+
+## Example
 
 This assumes we have a sequence of digitized page images with OCR text and MARC metadata:
 
