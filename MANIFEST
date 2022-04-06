@@ -1,0 +1,17 @@
+lib/METS.pm
+lib/METS/ChecksumCache.pm
+lib/METS/File.pm
+lib/METS/FileGroup.pm
+lib/METS/Header.pm
+lib/METS/MetadataSection.pm
+lib/METS/StructMap.pm
+lib/METS/Subfile.pm
+lib/PREMIS.pm
+lib/PREMIS/Event.pm
+lib/PREMIS/LinkingAgent.pm
+lib/PREMIS/Object.pm
+lib/PREMIS/Outcome.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+README.md

@@ -1,10 +1,36 @@
-#!/usr/bin/perl
+# METS and PREMIS generation for PERL
 
+This library supports generating METS (1.x) and PREMIS-in-METS (2.x) with perl.
+
+## Installation
+
+```bash
+git clone https://github.com/hathitrust/metslib
+perl Makefile.PL
+make
+make install
+```
+
+Or
+
+```bash
+cpanm install git://github.com/hathitrust/metslib
+```
+
+## Example
+
+This assumes we have a sequence of digitized page images with OCR text and MARC metadata:
+
+* `marc.xml` - MARC21 metadata
+* `NNNNNNNN.jp2` - JPEG2000 images
+* `NNNNNNNN.txt` - OCR plain text
+* `NNNNNNNN.xml` - Coordinate OCR
+
+```perl
 use METS;
 use strict;
 
-chdir("sample");
-my $mets = new METS( objid => "uc2.ark:/13960/t3rv0kf98" );
+my $mets = new METS( objid => "example_objid" );
 
 $mets->add_schema(
     "MARC",
@@ -13,7 +39,7 @@ $mets->add_schema(
 );
 
 my $header = new METS::Header(
-    createdate   => "2010-04-30T23:41:22",
+    createdate   => "2010-04-30T00:00:00Z",
     recordstatus => "NEW"
 );
 
@@ -23,49 +49,17 @@ $header->add_agent(
     name => 'DLPS'
 );
 
-$header->add_alt_record_id( 'ia.londonspybookoft00burk',
-    type => 'IAidentifier' );
-
 $mets->set_header($header);
 
-my $dmdSec = new METS::MetadataSection( 'dmdSec', id => "DMD1" );
-$dmdSec->set_md_ref(
-    mdtype       => "MARC",
-    loctype      => "OTHER",
-    otherloctype => "Item ID stored as second call number in item record",
-    xptr         => "uc2.ark:/13960/t3rv0kf98"
-);
-
-$mets->add_dmd_sec($dmdSec);
-
-$dmdSec = new METS::MetadataSection( 'dmdSec', id => "DMD2" );
+$dmdSec = new METS::MetadataSection( 'dmdSec', id => "DMD1" );
 $dmdSec->set_xml_file(
     "marc.xml",
     mdtype => "MARC",
-    label  => "IA MARC record"
 );
 
 $mets->add_dmd_sec($dmdSec);
 
-# add files to checksum cache, if we have existing checksums..
-#my $checksum_cache = new METS::ChecksumCache;
-#foreach my $file (@somefiles) {
-#    $checksum_cache->add_file($file,get_checksum($file));
-#}
-
-my $zip_filegroup = new METS::FileGroup( id => 'FG1', use => 'zip archive' );
-
-#$filegroup->set_checksum_cache($checksum_cache);
-
-$zip_filegroup->add_file(
-    "ark+=13960=t3rv0kf98.zip",
-    mimetype => 'application/zip',
-    prefix   => 'ZIP'
-);
-
-$mets->add_filegroup($zip_filegroup);
-
-my $img_filegroup = new METS::FileGroup( id => 'FG2', use => 'image' );
+my $img_filegroup = new METS::FileGroup( id => 'FG1', use => 'image' );
 
 #$filegroup->set_checksum_cache($checksum_cache);
 $img_filegroup->add_files(
@@ -76,7 +70,7 @@ $img_filegroup->add_files(
 
 $mets->add_filegroup($img_filegroup);
 
-my $ocr_filegroup = new METS::FileGroup( id => 'FG3', use => 'ocr' );
+my $ocr_filegroup = new METS::FileGroup( id => 'FG2', use => 'ocr' );
 
 #$filegroup->set_checksum_cache($checksum_cache);
 $ocr_filegroup->add_files(
@@ -87,7 +81,7 @@ $ocr_filegroup->add_files(
 
 $mets->add_filegroup($ocr_filegroup);
 
-my $xml_filegroup = new METS::FileGroup( id => 'FG4', use => 'coordOCR' );
+my $xml_filegroup = new METS::FileGroup( id => 'FG3', use => 'coordOCR' );
 
 #$filegroup->set_checksum_cache($checksum_cache);
 $xml_filegroup->add_files(
@@ -109,11 +103,10 @@ for ( my $i = 1; $i <= 10; $i++ ) {
         ],
         order => $i,
         type  => "page",
-        label => "PAGETAG"
     );
 }
 
 $mets->add_struct_map($struct_map);
 
 print $mets->to_node()->toString(1);
-
+```
