@@ -9,6 +9,8 @@ use METS::FileGroup;
 use METS::StructMap;
 use METS::ChecksumCache;
 
+$VERSION = 1.0.0;
+
 =head1 NAME
 
 METS - library to create METS XML.
